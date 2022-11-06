@@ -8,6 +8,8 @@ Utilice los archivos `tbl0.tsv`, `tbl1.tsv` y `tbl2.tsv`, para resolver las preg
 
 """
 import pandas as pd
+from posixpath import split
+from unicodedata import numeric
 
 tbl0 = pd.read_csv("tbl0.tsv", sep="\t")
 tbl1 = pd.read_csv("tbl1.tsv", sep="\t")
@@ -22,7 +24,7 @@ def pregunta_01():
     40
 
     """
-    return
+    return  len(tbl0)
 
 
 def pregunta_02():
@@ -33,7 +35,7 @@ def pregunta_02():
     4
 
     """
-    return
+    return len(tbl0.columns)
 
 
 def pregunta_03():
@@ -50,7 +52,7 @@ def pregunta_03():
     Name: _c1, dtype: int64
 
     """
-    return
+    return tbl0['_c1'].value_counts().sort_index()
 
 
 def pregunta_04():
@@ -65,7 +67,9 @@ def pregunta_04():
     E    4.785714
     Name: _c2, dtype: float64
     """
-    return
+    valoresLetras = tbl0[['_c1', '_c2']].groupby(['_c1']).mean()
+    promedios = valoresLetras.squeeze()
+    return promedios
 
 
 def pregunta_05():
@@ -82,7 +86,9 @@ def pregunta_05():
     E    9
     Name: _c2, dtype: int64
     """
-    return
+    valoresLetras = tbl0[['_c1', '_c2']].groupby(['_c1']).max()
+    maximos = valoresLetras.squeeze()
+    return maximos
 
 
 def pregunta_06():
@@ -94,7 +100,9 @@ def pregunta_06():
     ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
     """
-    return
+    letrasUnicas = tbl1['_c4'].unique()
+    lista = sorted(map(lambda x: x.upper(), letrasUnicas))
+    return lista
 
 
 def pregunta_07():
@@ -110,7 +118,9 @@ def pregunta_07():
     E    67
     Name: _c2, dtype: int64
     """
-    return
+    letrasSuma = tbl0[['_c1', '_c2']].groupby(['_c1']).sum()
+    suma = letrasSuma.squeeze()
+    return suma
 
 
 def pregunta_08():
@@ -128,7 +138,10 @@ def pregunta_08():
     39   39   E    5  1998-01-26    44
 
     """
-    return
+    valoresSuma = tbl0.sum(numeric_only=True, axis=1).tolist()
+    nuevoDf = tbl0.copy()
+    nuevoDf['suma'] = valoresSuma
+    return nuevoDf
 
 
 def pregunta_09():
@@ -146,7 +159,11 @@ def pregunta_09():
     39   39   E    5  1998-01-26  1998
 
     """
-    return
+    fechas = tbl0['_c3'].tolist()
+    anos = list(map(lambda x: x.split('-')[0], fechas))
+    nuevoDf = tbl0.copy()
+    nuevoDf['year'] = anos
+    return nuevoDf
 
 
 def pregunta_10():
@@ -163,7 +180,15 @@ def pregunta_10():
     3   D                  1:2:3:5:5:7
     4   E  1:1:2:3:3:4:5:5:5:6:7:8:8:9
     """
-    return
+    valoresBase = tbl0[['_c1', '_c2']].groupby(['_c1'])['_c2'].apply(list).tolist()
+    c2 = []
+    for i in valoresBase:
+        string = ''
+        for j in sorted(i):
+            string += f'{j}:'
+        c2.append(string:-1])
+
+    return pd.DataFrame({ '_c2': c2}, index = pd.Series(['A', 'B', 'C', 'D', 'E'], name='_c1'))
 
 
 def pregunta_11():
@@ -182,7 +207,18 @@ def pregunta_11():
     38   38      d,e
     39   39    a,d,f
     """
-    return
+    valoresBase = tbl1.groupby(['_c0'])['_c4'].apply(list).tolist()
+    c0 = tbl1['_c0'].unique().tolist()
+    c4 = []
+    for i in valoresBase:
+        string = ''
+        for j in sorted(i):
+            string += f'{j},'
+        c4.append(string[:-1])
+    return pd.DataFrame({
+        '_c0': c0,
+        '_c4': c4
+    })
 
 
 def pregunta_12():
@@ -200,7 +236,24 @@ def pregunta_12():
     38   38                    eee:0,fff:9,iii:2
     39   39                    ggg:3,hhh:8,jjj:5
     """
-    return
+    c5a = tbl2.groupby(['_c0'])['_c5a'].apply(list).tolist()
+    c5b = tbl2.groupby(['_c0'])['_c5b'].apply(list).tolist()
+    c0 = tbl1['_c0'].unique().tolist()
+    c5 = []
+    for i in range(len(c5a)):
+        x = []
+        for j in range(len(c5a[i])):
+            x.append(f'{c5a[i][j]}:{c5b[i][j]}')
+        string = ''
+
+        for p in sorted(x):
+            string += f'{p},'
+        c5.append(string[:-1])
+
+    return pd.DataFrame({
+        '_c0': c0,
+        '_c5': c5
+    })
 
 
 def pregunta_13():
@@ -217,4 +270,7 @@ def pregunta_13():
     E    275
     Name: _c5b, dtype: int64
     """
-    return
+    columnasJoin = pd.merge(tbl0, tbl2, on='_c0', how='inner')
+    valores = columnasJoin[['_c1', '_c5b']].groupby(['_c1']).sum()
+    columna = valores.squeeze()
+    return columna
