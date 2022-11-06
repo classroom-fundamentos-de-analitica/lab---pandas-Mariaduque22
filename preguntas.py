@@ -186,7 +186,7 @@ def pregunta_10():
         string = ''
         for j in sorted(i):
             string += f'{j}:'
-         c2.append(string[:-1])
+        c2.append(string[:-1])
 
     return pd.DataFrame({ '_c2': c2}, index = pd.Series(['A', 'B', 'C', 'D', 'E'], name='_c1'))
 
